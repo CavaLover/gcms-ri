@@ -3,6 +3,7 @@
 import argparse
 from datetime import datetime, timezone
 from importlib.metadata import PackageNotFoundError, version
+from io import TextIOWrapper
 import json
 import math
 from pathlib import Path
@@ -255,6 +256,11 @@ def execute(args):
 
 
 def main(argv=None):
+    # Redirected Windows consoles can use a code page that cannot print some
+    # sample paths. Keep the report on disk even when that path needs escaping.
+    for stream in (sys.stdout, sys.stderr):
+        if isinstance(stream, TextIOWrapper):
+            stream.reconfigure(errors="backslashreplace")
     app = parser()
     args = app.parse_args(argv)
     try:
