@@ -1,0 +1,16 @@
+__pycache__/
+*.py[cod]
+.venv/
+*.egg-info/
+dist/
+build/
+demo-output/
+.coverage
+*.D/
+*.ms
+*.dll
+*.exe
+*.pdf
+*.xlsx
+.env
+outputs/

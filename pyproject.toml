@@ -1,0 +1,27 @@
+[build-system]
+requires = ["setuptools>=77"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "gcms-ri"
+version = "0.1.0"
+description = "Auditable GC–MS library, retention-index, and fragment review"
+readme = "README.md"
+requires-python = ">=3.11"
+license = "MIT"
+license-files = ["LICENSE"]
+dependencies = ["numpy>=1.26,<3", "XlsxWriter>=3.2,<4"]
+
+[project.optional-dependencies]
+adams = ["pdfplumber>=0.11.4,<1"]
+test = ["reportlab>=4,<6"]
+
+[project.scripts]
+gcms-ri = "gcms_ri.cli:main"
+
+[project.urls]
+Repository = "https://github.com/CavaLover/gcms-ri"
+Issues = "https://github.com/CavaLover/gcms-ri/issues"
+
+[tool.setuptools.package-data]
+gcms_ri = ["*.cs"]
