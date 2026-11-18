@@ -29,7 +29,7 @@ RASTER_AXES = {
 }
 
 
-def pdf_entries(path, indices, window):
+def pdf_entries(path, indices, window, index=None):
     try:
         import pdfplumber
     except ImportError as exc:
@@ -50,6 +50,8 @@ def pdf_entries(path, indices, window):
                     for hit in headers
                 ]
                 index_count += len(refs)
+                if index is not None:
+                    index.extend(dict(r) for r in refs)
                 active = [r for r in refs if bisect_left(indices, r["ai"] - window) <
                           bisect_right(indices, r["ai"] + window)]
                 if not active:

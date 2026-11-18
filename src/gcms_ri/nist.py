@@ -13,7 +13,7 @@ import time
 _HIT = re.compile(
     r"Hit\s+(\d+)\s*:\s*<<(.*?)>>;\s*<<(.*?)>>;\s*MF:\s*(\d+);"
     r"\s*RMF:\s*(\d+);\s*Prob:\s*([\d.]+);\s*CAS:\s*(.*?);"
-    r"\s*Mw:\s*(.*?);\s*Lib:\s*<<(.*?)>>;\s*Id:\s*(.*?);\s*RI:\s*(.*?)\."
+    r"\s*Mw:\s*(.*?);\s*Lib:\s*<<(.*?)>>;\s*Id:\s*(.*?);\s*RI:\s*([^\r\n]*?)(?:\.)?\s*$"
 )
 
 
