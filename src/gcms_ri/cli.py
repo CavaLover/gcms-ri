@@ -69,6 +69,13 @@ def parser():
     summary.add_argument("--mass-min", type=int, default=38)
     summary.add_argument("--mass-max", type=int, default=600)
     add_summary(summary)
+    group_review = sub.add_parser("study", help="按样品设计复核 CK、分子离子和分组峰，并插入实测标样")
+    group_review.add_argument("--design",type=absolute,required=True,help="样品分组与每个样品的 CK 对应 JSON")
+    group_review.add_argument("--alkanes",type=absolute,required=True,help="使用者复核的 carbon,rt_min 标样 CSV")
+    group_review.add_argument("--adams-index",type=absolute,help="可选的本地 Adams 完整索引 JSON")
+    group_review.add_argument("--rt-window",type=positive,default=.10,help="保留时间匹配窗口，单位分钟")
+    group_review.add_argument("--ri-window",type=positive,default=20,help="实验 RI 初筛窗口")
+    group_review.add_argument("--out",type=absolute,required=True)
     literature = sub.add_parser("literature", help="按CAS查询公开NIST RI与文献线索（不上传样品）")
     literature.add_argument("--cas", action="append", required=True)
     literature.add_argument("--out", type=absolute, required=True)
@@ -330,6 +337,10 @@ def summarize_existing(args):
 
 
 def execute(args):
+    if args.command == "study":
+        from .study import study
+        study(args,create_output,pkg_version())
+        return
     if args.command == 'literature':
         from .webbook import lookup
         create_output(args.out)

@@ -2,12 +2,12 @@
 
 把 Agilent 数据读取、NIST 检索、实验 RI、参考谱碎片、CK 和文献证据汇总为可追溯的中文报告。**Adams 精油库未检出对应条目，不再直接排除 NIST 候选。** 程序保留完整检索名、具体离子、参考 RI 条件和未解决的异构体竞争关系。
 
-当前版本 **v0.2.0**；需要 Python 3.11 或更新版本。原生 Agilent/NIST 流程需要 Windows 和用户自己的本地厂商软件；峰表复核、候选汇总和合成演示可以跨平台运行。
+当前版本 **v0.3.0**。需要 Python 3.11 或更新版本。原生 Agilent/NIST 流程需要 Windows 和用户自己的本地厂商软件。峰表复核、分组复核、候选汇总和合成演示可以跨平台运行。
 
 ## 安装与演示
 
 ```powershell
-python -m pip install --upgrade "gcms-ri[adams] @ https://github.com/CavaLover/gcms-ri/releases/download/v0.2.0/gcms_ri-0.2.0-py3-none-any.whl"
+python -m pip install --upgrade "gcms-ri[adams] @ https://github.com/CavaLover/gcms-ri/releases/download/v0.3.0/gcms_ri-0.3.0-py3-none-any.whl"
 python -m gcms_ri --version
 python -m gcms_ri demo --out demo-output
 ```
@@ -42,6 +42,41 @@ carbon,rt_min
 可先执行 `python -m gcms_ri standard --standard 标准.D --agilent-dir "C:\Lab\Agilent\bin" --out 标准复核`，导出候选时间与 MSP，再核实碳数。程序不自动把某个峰指定为某个正构烷烃。
 
 NIST 检索沿用本机配置。为使谱库检索与 RI 筛选相互独立，请关闭 **Use RI in Search**，并导出含 MF、RMF、CAS、库编号和 RI 的命中报告。程序保留设置快照。若只导出每谱前两项，只能复核这两项；建议导出更多命中供竞争候选审查。NIST 共用后台文件，每次只运行一个检索任务；超时后须先确认 NIST 空闲，再处理保留的锁文件。
+
+## 分组复核
+
+`study` 读取已有的 `run` 或 `review` 目录。每份实验样品在设计文件中填写分组和对应 CK。保留 `run` 目录中的 `run.json` 和 `scans` 可让程序复核提取离子色谱（EIC）。相对 `run_dir` 以设计文件所在目录为基准。
+
+```json
+{
+  "samples": [
+    {
+      "run_dir": "本批分析",
+      "sample": "样品A",
+      "group": "处理组",
+      "blanks": [{"sample": "CK", "scope": "same_batch"}]
+    },
+    {
+      "run_dir": "另一批分析",
+      "sample": "样品B",
+      "group": "比较组",
+      "blanks": [{"run_dir": "本批分析", "sample": "CK", "scope": "historical"}]
+    }
+  ]
+}
+```
+
+```powershell
+python -m gcms_ri study --design "C:\Lab\分组.json" --alkanes "C:\Lab\本机实测标样.csv" --out "C:\Lab\分组复核"
+```
+
+- **`--alkanes` 是必填项。** 提供自己核实过的 `carbon,rt_min` 校准 CSV，或先用 `standard --standard` 读取自己的原始 Agilent `.D` 再整理校准文件。蓝色行使用该 CSV 的保留时间和碳数。多个批次共用校准前，需要确认采集方法和标准峰可比。跨条件的数据应各自使用对应校准分开复核。
+- 每份样品可指定多个 CK，`scope` 可填 `same_batch`、`historical` 或 `unspecified`。跨批次 CK 用于排查代表性背景。默认比较保留时间差 ≤0.10 min 和同处理模式 EI 余弦 ≥0.80。提供原始扫描时，再通过特征离子提取补查 CK 中未自动检出的峰。
+- 样品和 CK 的峰形相符时输出局部基线校正后的特征离子面积比。面积用于衡量空白贡献，结果不做 CK 直接扣除或浓度换算。同峰及典型硅氧烷、邻苯二甲酸酯类背景候选移出分组主表，全部证据留在 `CK审计`。
+- 正构烷烃结合实测标样位置、烷烃碎片及分子离子同峰暂定归属。可在确认漂移后显式填写每个样品的 `rt_offset_min`，供匹配窗口使用。样品实验 RI 始终用实测 TR 内插。标定范围外不外推。
+- Adams 对应条目按候选 CAS 单列，来源为运行目录缓存的 Adams 索引或显式传入的 `--adams-index`。输出保留 NIST 原始命中，方便复核同系物排序冲突。通过标样和分子离子得到的归属仍是暂定。
+
+输出为 `分组复核.xlsx` 和 `study.json`。分组主表使用相同表头，蓝色标样按 TR 穿插。另有样品与 CK、分组烷烃对照、样品间峰配对和 CK 审计页。原有 `run`、`review` 与 `summarize` 的输出仍适用于原工作流。
 
 ## 复用旧结果
 
